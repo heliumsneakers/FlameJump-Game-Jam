@@ -24,7 +24,7 @@ int main(void)
     camera.projection = CAMERA_PERSPECTIVE;
 
     /* ---- Assets ---------------------------------------------------- */
-    Model model = LoadModel(ASSET("box.obj"));
+    Model model = LoadModel(ASSET("fireguy.obj"));
     Vector3 pos = { 0 };
     float   angle = 0.0f;
 
