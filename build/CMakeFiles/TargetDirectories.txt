@@ -1,0 +1,3 @@
+/Users/klo/projects/pico-raylib/build/CMakeFiles/app.dir
+/Users/klo/projects/pico-raylib/build/CMakeFiles/edit_cache.dir
+/Users/klo/projects/pico-raylib/build/CMakeFiles/rebuild_cache.dir

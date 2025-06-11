@@ -1,0 +1,1 @@
+/Users/klo/projects/pico-raylib/lib/emsdk/upstream/emscripten/em++ @CMakeFiles/app.dir/objects1.rsp -o app.js @CMakeFiles/app.dir/linkLibs.rsp

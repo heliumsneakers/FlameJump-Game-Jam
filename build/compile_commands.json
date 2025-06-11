@@ -1,0 +1,8 @@
+[
+{
+  "directory": "/Users/klo/projects/pico-raylib/build",
+  "command": "/Users/klo/projects/pico-raylib/lib/emsdk/upstream/emscripten/em++ -DPLATFORM_WEB @CMakeFiles/app.dir/includes_CXX.rsp -std=gnu++17 -o CMakeFiles/app.dir/src/main.cpp.o -c /Users/klo/projects/pico-raylib/src/main.cpp",
+  "file": "/Users/klo/projects/pico-raylib/src/main.cpp",
+  "output": "CMakeFiles/app.dir/src/main.cpp.o"
+}
+]
