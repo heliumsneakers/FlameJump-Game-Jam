@@ -22,7 +22,7 @@ source lib/emsdk/emsdk_env.sh
 Clone & Submodules
 
 # Clone this repo (replace URL accordingly)
-$ git clone https://github.com/yourusername/pico-raylib-web.git
+$ git clone https://github.com/heliumsneakers/FlameJump-Game-Jam.git
 $ cd pico-raylib-web
 
 # Initialize & update submodules (Raylib, etc.)
