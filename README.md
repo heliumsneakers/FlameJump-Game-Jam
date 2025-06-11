@@ -12,36 +12,40 @@ A lightweight WebAssembly/WebGL game for the MicroGim game jam using Raylib and 
 - **Make**  
 - **Python** (for `emrun`, optional)
 
-Ensure your shell sources Emscripten before building or launching your editor:
+## Clone & Submodules
 
 ```bash
-source lib/emsdk/emsdk_env.sh
-```
-## Clone & Submodules
-```bash
-# Clone this repo (replace URL accordingly)
-git clone https://github.com/yourusername/pico-raylib-web.git
+git clone https://github.com/heliumsneakers/FlameJump-Game-Jam.git
 cd pico-raylib-web
 
-# Initialize & update submodules (Raylib, etc.)
+# Initialize & update submodules (Raylib, emscripten SDK etc.)
 git submodule update --init --recursive
 ```
 
+## IMPORTANT
+
+Ensure your shell sources Emscripten before building or launching your editor:
+```bash
+source lib/emsdk/emsdk_env.sh
+```
+
 ## Building Raylib for Web
+
 ```bash
 # From project root:
 cd lib/raylib
 source ../emsdk/emsdk_env.sh          # make emcc/em++ available
 make PLATFORM=PLATFORM_WEB            # produces src/libraylib.web.a
 ```
-Alternatively, you can use CMake:
+
+Alternatively, you can use Emscripten CMake:
 ```bash
 mkdir -p build_web && cd build_web
 emcmake cmake .. -DPLATFORM=Web
 emmake make
 ```
 
-## CMake Build (Optional)
+## CMake Project Build (Optional)
 
 A helper script cmake.sh will generate build files and compile commands for LSP.
 ```bash
@@ -54,7 +58,7 @@ or
 ./cmake.sh
 ```
 
-## Build project
+## Build project for Web
 ```bash
 sh web.sh
 or
