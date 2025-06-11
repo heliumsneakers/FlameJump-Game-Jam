@@ -1,9 +1,12 @@
-# picocad material
+# Blender 4.0.2 MTL File: 'None'
+# www.blender.org
+
 newmtl fireguy_mtl
-ka 1.000000 1.000000 1.000000
-kd 1.000000 1.000000 1.000000
-ks 0.000000 0.000000 0.000000
-tr 1.000000
+Ns 0.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
 illum 1
-ns 0.000000
-map_kd fireguy_tex.png
+map_Kd fireguy_tex.png

@@ -1,35 +1,39 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -euo pipefail
 
-# Path to Emscripten
-EMSDK_PATH="lib/emsdk"
+# --- locate project root & emsdk ----------------------------------------
+ROOT="$(cd "$(dirname "$0")" && pwd)"
+EMSDK_PATH="$ROOT/lib/emsdk"
 
-# Source the Emscripten environment
-cd $EMSDK_PATH
-source emsdk_env.sh
+# --- load Emscripten ----------------------------------------------------
+source "$EMSDK_PATH/emsdk_env.sh"
 
-# Navigate back to your project directory
-cd ..
-cd ..
+# --- prepare output dir ------------------------------------------------
+mkdir -p "$ROOT/web_build"
 
-# Build to WebAssembly
-emcc -o ./web_build/index.html \
-   src/main.cpp \
+# --- gather all source files -------------------------------------------
+# Finds .cpp and .c under src/ and builds a space-separated list
+SRC_FILES=$(find "$ROOT/src" -type f \( -name '*.cpp' -o -name '*.c' \))
+
+# --- compile & link with em++ ------------------------------------------
+em++ $SRC_FILES \
+    -std=c++17 \
     -Os -Wall \
-    -I./ \
-    -I lib/raylib/src \
-    -L lib/raylib/src -lraylib.web \
+    -I"$ROOT" \
+    -I"$ROOT/lib/raylib/src" \
+    -L"$ROOT/lib/raylib/src" -lraylib.web \
     -s USE_GLFW=3 \
     -s ASYNCIFY \
-    --shell-file ./shell.html \
-    --embed-file assets@/assets \
+    --shell-file "$ROOT/shell.html" \
+    --embed-file "$ROOT/assets@/assets" \
     -s TOTAL_STACK=64MB \
     -s INITIAL_MEMORY=256MB \
     -s MAXIMUM_MEMORY=512MB \
     -s ALLOW_MEMORY_GROWTH=1 \
     -s ASSERTIONS=2 \
     -s SAFE_HEAP=1 \
-    -DPLATFORM_WEB
+    -DPLATFORM_WEB \
+    -o "$ROOT/web_build/index.html"
 
-emrun --no_browser --port 8080 web_build/index.html
-
+# --- serve ----------------------------------------------------------------
+emrun --no_browser --port 8080 "$ROOT/web_build/index.html"

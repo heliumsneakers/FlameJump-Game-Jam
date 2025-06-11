@@ -1,9 +1,10 @@
-// model_viewer_rt.cpp
+/* main.cpp */
 #include "raylib.h"
-#include "raymath.h"        // helpers
+#include "raymath.h"
+#include "player/player.h"
 
 #if defined(PLATFORM_WEB)
-    #define ASSET(x) "assets/" x     // used with --preload-file assets
+    #define ASSET(x) "assets/" x
 #else
     #define ASSET(x) "../assets/" x
 #endif
@@ -11,70 +12,62 @@
 int main(void)
 {
     const int screenW = 1920, screenH = 1080;
-    const int fbW = 256, fbH = 192;       // low-res render target
+    const int fbW = 128, fbH = 128;
 
-    InitWindow(screenW, screenH, "Model viewer (240×160 RT → 800×600)");
+    InitWindow(screenW, screenH, "Ignite Jam");
 
-    /* ---- Camera ---------------------------------------------------- */
-    Camera camera = { {0} };
+    // Camera setup
+    Camera camera = { 0 };
     camera.position   = (Vector3){ 4.0f, 2.0f, 4.0f };
     camera.target     = (Vector3){ 0.0f, 1.0f, 0.0f };
     camera.up         = (Vector3){ 0.0f, 1.0f, 0.0f };
     camera.fovy       = 45.0f;
     camera.projection = CAMERA_PERSPECTIVE;
 
-    /* ---- Assets ---------------------------------------------------- */
-    Model model = LoadModel(ASSET("fireguy.obj"));
-    Vector3 pos = { 0 };
-    float   angle = 0.0f;
+    // Initialize player
+    Player player;
+    Player_Init(&player, ASSET("fireguy.obj"), ASSET("fireguy_tex.png"), (Vector3){0,0,0});
 
-    /* ---- Render-texture ------------------------------------------- */
+    // Render texture for low-res
     RenderTexture2D rt = LoadRenderTexture(fbW, fbH);
-    SetTextureFilter(rt.texture, TEXTURE_FILTER_POINT);   // crisp pixels
+    SetTextureFilter(rt.texture, TEXTURE_FILTER_POINT);
 
-    /* ---- Dest rectangle that preserves aspect ratio -------------- */
+    // Compute destination rectangle
     float scale = fminf((float)screenW / fbW, (float)screenH / fbH);
     Rectangle dest = {
-        (screenW - fbW * scale) * 0.5f,     // center X
-        (screenH - fbH * scale) * 0.5f,     // center Y
+        (screenW - fbW * scale) * 0.5f,
+        (screenH - fbH * scale) * 0.5f,
         fbW * scale,
         fbH * scale
     };
-    Rectangle src = { 0, 0, (float)fbW, -(float)fbH };   // flipped vertically
+    Rectangle src = { 0, 0, (float)fbW, -(float)fbH };
 
     SetTargetFPS(60);
 
-    /* ---- Main loop ------------------------------------------------- */
+    // Main loop
     while (!WindowShouldClose())
     {
-        angle += 45.0f * GetFrameTime();
-        if (angle > 360.0f) angle -= 360.0f;
+        float dt = GetFrameTime();
+        Player_IdleAnimation(&player, GetTime());
+        // Player_UpdateRotation(&player, 45.0f * dt);
         UpdateCamera(&camera, CAMERA_ORBITAL);
 
-        /* --- Draw into low-res framebuffer ------------------------- */
+        // Draw to render texture
         BeginTextureMode(rt);
             ClearBackground(RAYWHITE);
-
-            BeginMode3D(camera);
-                DrawModelEx(model, pos,
-                            (Vector3){ 0, 1, 0 }, angle,
-                            (Vector3){ 5, 5, 5 }, WHITE);
-                DrawGrid(20, 1.0f);
-            EndMode3D();
-
-            DrawText("Drag mouse: orbit  |  Scroll: zoom", 4, 4, 10, GRAY);
+            Player_Draw(&player, &camera);
         EndTextureMode();
 
-        /* --- Now draw the RT scaled to the real window ------------- */
+        // Draw to screen
         BeginDrawing();
-            ClearBackground(BLACK);                 // letterbox bars
+            ClearBackground(BLACK);
             DrawTexturePro(rt.texture, src, dest, (Vector2){0}, 0, WHITE);
         EndDrawing();
     }
 
-    /* ---- Cleanup --------------------------------------------------- */
+    // Cleanup
     UnloadRenderTexture(rt);
-    UnloadModel(model);
+    Player_Unload(&player);
     CloseWindow();
     return 0;
 }
