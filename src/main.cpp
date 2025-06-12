@@ -12,7 +12,11 @@
 int main(void)
 {
     const int screenW = 1920, screenH = 1080;
-    const int fbW = 128, fbH = 128;
+
+    // PICO8 render res : 128x128
+    // Nintendo DS res : 256x192
+
+    const int fbW = 256, fbH = 192;
 
     InitWindow(screenW, screenH, "Ignite Jam");
 
