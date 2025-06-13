@@ -1,7 +1,10 @@
 /* main.cpp */
 #include "raylib.h"
 #include "raymath.h"
+
 #include "player/player.h"
+#include "level/platform.h"
+#include "level/level_generator.h"
 
 #if defined(PLATFORM_WEB)
     #define ASSET(x) "assets/" x
@@ -11,36 +14,47 @@
 
 int main(void)
 {
-    const int screenW = 1920, screenH = 1080;
-
-    // PICO8 render res : 128x128
-    // Nintendo DS res : 256x192
-
-    const int fbW = 256, fbH = 192;
+    // ------------------------------------------------------------------
+    // Window & camera
+    // ------------------------------------------------------------------
+    const int screenW = 1280, screenH = 720;
+    const int fbW = 256,  fbH = 192;   // low-res off-screen buffer
 
     InitWindow(screenW, screenH, "Ignite Jam");
 
-    // Camera setup
-    Camera camera = { 0 };
-    camera.position   = (Vector3){ 4.0f, 2.0f, 4.0f };
-    camera.target     = (Vector3){ 0.0f, 1.0f, 0.0f };
-    camera.up         = (Vector3){ 0.0f, 1.0f, 0.0f };
-    camera.fovy       = 45.0f;
+    Camera camera{};
+    camera.position   = { 4.0f, 2.0f,  4.0f };
+    camera.target     = { 0.0f, 1.0f,  0.0f };
+    camera.up         = { 0.0f, 1.0f,  0.0f };
+    camera.fovy       = 90.0f;
     camera.projection = CAMERA_PERSPECTIVE;
 
-    // Initialize player
+    // ------------------------------------------------------------------
+    // Player (always drawn at 0,1,0 — y rises as the game progresses)
+    // ------------------------------------------------------------------
     Player player;
-    Player_Init(&player, ASSET("fireguy.obj"), ASSET("fireguy_tex.png"), (Vector3){0,0,0});
+    Player_Init(&player,
+                ASSET("fireguy.obj"),
+                ASSET("fireguy_tex.png"),
+                { 0.0f, 1.1f, 0.0f });
 
-    Model plat = LoadModel(ASSET("woodplatform.obj"));
-    Texture2D platTex = LoadTexture(ASSET("woodplatform_tex.png"));
-    plat.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = platTex;
+    // ------------------------------------------------------------------
+    // Platform prototype  &  level generator
+    // ------------------------------------------------------------------
+    Platform proto;
+    Platform_Init(&proto,
+                  ASSET("woodplatform.obj"),
+                  ASSET("woodplatform_tex.png"));
 
-    // Render texture for low-res
+    LevelGenerator level;
+    LevelGenerator_Init(&level, &proto);
+
+    // ------------------------------------------------------------------
+    // Off-screen render target
+    // ------------------------------------------------------------------
     RenderTexture2D rt = LoadRenderTexture(fbW, fbH);
     SetTextureFilter(rt.texture, TEXTURE_FILTER_POINT);
 
-    // Compute destination rectangle
     float scale = fminf((float)screenW / fbW, (float)screenH / fbH);
     Rectangle dest = {
         (screenW - fbW * scale) * 0.5f,
@@ -52,31 +66,38 @@ int main(void)
 
     SetTargetFPS(60);
 
-    // Main loop
+    // ------------------------------------------------------------------
     while (!WindowShouldClose())
     {
         float dt = GetFrameTime();
+
+        // -- update ----------------------------------------------------
         Player_IdleAnimation(&player, GetTime());
-        // Player_UpdateRotation(&player, 45.0f * dt);
         UpdateCamera(&camera, CAMERA_ORBITAL);
 
-        // Draw to render texture
+        // Advance level if player climbs past halfway point
+        LevelGenerator_Update(&level, player.position.y);
+
+        // -- draw ------------------------------------------------------
         BeginTextureMode(rt);
-            ClearBackground(RAYWHITE);
-            Player_Draw(&player, &camera);
-            DrawModel(plat, (Vector3){ 0.0f, 0.0f, 0.0f }, 2.0f, BLACK);
-            DrawModelWires(plat, (Vector3){ 0.0f, 0.0f, 0.0f }, 2.0f, RED);
+            ClearBackground(BLACK);
+
+            BeginMode3D(camera);
+                LevelGenerator_Draw(&level);     // draw all platforms
+                Player_Draw(&player, &camera);   // draw player
+            EndMode3D();
+
         EndTextureMode();
 
-        // Draw to screen
         BeginDrawing();
             ClearBackground(BLACK);
-            DrawTexturePro(rt.texture, src, dest, (Vector2){0}, 0, WHITE);
+            DrawTexturePro(rt.texture, src, dest, { 0, 0 }, 0, WHITE);
         EndDrawing();
     }
 
-    // Cleanup
+    // ------------------------------------------------------------------
     UnloadRenderTexture(rt);
+    Platform_Unload(&proto);
     Player_Unload(&player);
     CloseWindow();
     return 0;

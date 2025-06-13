@@ -48,12 +48,10 @@ void Player_Unload(Player *player) {
 }
 
 void Player_Draw(const Player *player, const Camera *camera) {
-    BeginMode3D(*camera);
     DrawModelEx(player->model,
                 player->position,
                 (Vector3){0,1,0},
                 player->rotation,
-                (Vector3){1,1,1},
+                (Vector3){1.5f, 1.5f, 1.5f},
                 WHITE);
-    EndMode3D();
 }
