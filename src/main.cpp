@@ -32,6 +32,10 @@ int main(void)
     Player player;
     Player_Init(&player, ASSET("fireguy.obj"), ASSET("fireguy_tex.png"), (Vector3){0,0,0});
 
+    Model plat = LoadModel(ASSET("woodplatform.obj"));
+    Texture2D platTex = LoadTexture(ASSET("woodplatform_tex.png"));
+    plat.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = platTex;
+
     // Render texture for low-res
     RenderTexture2D rt = LoadRenderTexture(fbW, fbH);
     SetTextureFilter(rt.texture, TEXTURE_FILTER_POINT);
@@ -60,6 +64,8 @@ int main(void)
         BeginTextureMode(rt);
             ClearBackground(RAYWHITE);
             Player_Draw(&player, &camera);
+            DrawModel(plat, (Vector3){ 0.0f, 0.0f, 0.0f }, 2.0f, BLACK);
+            DrawModelWires(plat, (Vector3){ 0.0f, 0.0f, 0.0f }, 2.0f, RED);
         EndTextureMode();
 
         // Draw to screen
