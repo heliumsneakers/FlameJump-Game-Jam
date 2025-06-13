@@ -7,7 +7,7 @@
 #define GRID_WIDTH    16   // cells horizontally
 #define GRID_HEIGHT   24   // cells vertically (visible window)
 #define CELL_WIDTH    2.0f // world units per cell (x)
-#define CELL_HEIGHT   1.0f // world units per cell (y)
+#define CELL_HEIGHT   4.0f // world units per cell (y)
 
 #define START_FLOOR_PLATFORMS 5  // contiguous starting floor
 

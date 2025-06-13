@@ -22,13 +22,6 @@ int main(void)
 
     InitWindow(screenW, screenH, "Ignite Jam");
 
-    Camera camera{};
-    camera.position   = { 4.0f, 2.0f,  4.0f };
-    camera.target     = { 0.0f, 1.0f,  0.0f };
-    camera.up         = { 0.0f, 1.0f,  0.0f };
-    camera.fovy       = 90.0f;
-    camera.projection = CAMERA_PERSPECTIVE;
-
     // ------------------------------------------------------------------
     // Player (always drawn at 0,1,0 — y rises as the game progresses)
     // ------------------------------------------------------------------
@@ -38,6 +31,13 @@ int main(void)
                 ASSET("fireguy_tex.png"),
                 { 0.0f, 1.1f, 0.0f });
 
+    Camera camera{};
+    camera.position   = { 0.0f, 8.0f,  -15.0f };
+    camera.target     = player.position;
+    camera.up         = { 0.0f, 2.0f,  0.0f };
+    camera.fovy       = 90.0f;
+    camera.projection = CAMERA_PERSPECTIVE; // CAMERA_ORBITAL FOR TESTING.
+ 
     // ------------------------------------------------------------------
     // Platform prototype  &  level generator
     // ------------------------------------------------------------------
@@ -73,7 +73,7 @@ int main(void)
 
         // -- update ----------------------------------------------------
         Player_IdleAnimation(&player, GetTime());
-        UpdateCamera(&camera, CAMERA_ORBITAL);
+        UpdateCamera(&camera, CAMERA_PERSPECTIVE);
 
         // Advance level if player climbs past halfway point
         LevelGenerator_Update(&level, player.position.y);

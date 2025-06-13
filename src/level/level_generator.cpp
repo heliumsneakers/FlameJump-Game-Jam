@@ -82,7 +82,7 @@ void LevelGenerator_Draw(const LevelGenerator *lg) {
         for (int gx = 0; gx < GRID_WIDTH; gx++) {
             Platform *p = lg->grid[gy][gx];
             if (p) {
-                Platform_Draw(p, CellToWorld(gx, worldRow), 1.0f);
+                Platform_Draw(p, CellToWorld(gx, worldRow), 2.0f);
             }
         }
     }
