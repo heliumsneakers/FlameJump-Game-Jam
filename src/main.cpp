@@ -13,6 +13,27 @@
 #define ASSET(x) "../assets/" x
 #endif
 
+static void CameraSmoothFollow(Camera* cam,
+                               Vector3 playerPos,
+                               float   dt)
+{
+    /* desired offset from player */
+    const float CAM_HEIGHT   =  8.0f;
+    const float CAM_DISTANCE = -18.0f;     // along –Z
+    const float SMOOTH_SPEED =  8.0f;      // larger = snappier
+
+    Vector3 desiredPos = {
+        playerPos.x,
+        playerPos.y + CAM_HEIGHT,
+        playerPos.z + CAM_DISTANCE
+    };
+
+    /* exponential smoothing: pos += (desired - pos) * α */
+    float alpha = 1.0f - powf(0.001f, dt * SMOOTH_SPEED);
+    cam->position = Vector3Lerp(cam->position, desiredPos, alpha);
+    cam->target   = Vector3Lerp(cam->target,   playerPos, alpha);
+}
+
 int main(void) {
     // ------------------------------------------------------------------
     // Window & camera
@@ -97,13 +118,14 @@ int main(void) {
                                               (gy + dy) * CELL_HEIGHT, 0 },
                                               2.0f);
 
-                    ResolvePlatformCollision(&playerBody, &platBB, 0.8f);
+                    ResolvePlatformCollision(&playerBody, &platBB, 0.3f, &onGround);
                 }
         player.position = playerBody.pos;   // hand back to render system
+        
+        CameraSmoothFollow(&camera, player.position, dt);
 
         // -- update ----------------------------------------------------
         Player_IdleAnimation(&player, GetTime());
-        UpdateCamera(&camera, CAMERA_PERSPECTIVE);
 
         // Advance level if player climbs past halfway point
         LevelGenerator_Update(&level, player.position.y);

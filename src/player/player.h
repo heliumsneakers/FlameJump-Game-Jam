@@ -5,6 +5,8 @@
 #include "raylib.h"
 #include "../physics/physics.h"
 
+extern bool onGround;
+
 // Player struct holds model, texture, and animation data
 typedef struct Player {
     Model           model;

@@ -1,4 +1,5 @@
 #include "player.h"
+#include "raylib.h"
 #include "raymath.h"
 #include "../physics/physics.h"
 #include <stdlib.h>
@@ -8,7 +9,7 @@
 #define MOVE_SPEED   6.0f      // units / s
 #define JUMP_FORCE  12.0f
 
-static bool    onGround  = false;
+bool onGround = false;
 
 // ------------------------------------------------ utility (unchanged)
 static float FindBaseY(Mesh *mesh) {
@@ -63,6 +64,8 @@ void Player_Update(Player *p, Body *playerBody, float dt)
     if (IsKeyDown(KEY_A)) h += 1.0f;
     if (IsKeyDown(KEY_D)) h -= 1.0f;
     playerBody->vel.x = h * MOVE_SPEED;
+    
+    if(IsKeyDown(KEY_W)) playerBody->vel.y = 1.0f * MOVE_SPEED;
 
     /* --- jump ------------------------------------------------------ */
     if (onGround && IsKeyPressed(KEY_SPACE)) {
