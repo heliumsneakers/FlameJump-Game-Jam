@@ -15,12 +15,14 @@ typedef struct LevelGenerator {
     Platform *prototype;                       // reusable platform model
     Platform *grid[GRID_HEIGHT][GRID_WIDTH];   // current window cells
 
-    int baseRow;   // world row index corresponding to grid[0]
-    int topRow;    // highest generated world row so far
+    int baseRow;            // world row index corresponding to grid[0]
+    int topRow;             // highest generated world row so far
+    Vector3 playerSpawn;    // player spawn point.
 } LevelGenerator;
 
 void LevelGenerator_Init(LevelGenerator *lg, Platform *prototype);
 void LevelGenerator_Update(LevelGenerator *lg, float playerY);
 void LevelGenerator_Draw(const LevelGenerator *lg);
+Vector3 LevelGenerator_GetSpawnPos(const LevelGenerator *lg);
 
 #endif // LEVEL_GENERATOR_H

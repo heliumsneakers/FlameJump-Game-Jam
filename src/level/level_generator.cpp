@@ -57,6 +57,12 @@ void LevelGenerator_Init(LevelGenerator *lg, Platform *prototype) {
         lg->grid[0][startX + i] = prototype;
     }
 
+    lg->playerSpawn = (Vector3) {
+        (startX * CELL_WIDTH),     // x
+        1.0f,                   // y
+        0.0f,                   // z
+    };
+
     // generate remaining rows of first chunk
     for (int row = 1; row < GRID_HEIGHT; row++) {
         GenerateRow(lg, row);
@@ -86,4 +92,9 @@ void LevelGenerator_Draw(const LevelGenerator *lg) {
             }
         }
     }
+}
+
+Vector3 LevelGenerator_GetSpawnPos(const LevelGenerator *lg)
+{
+    return lg->playerSpawn;
 }
