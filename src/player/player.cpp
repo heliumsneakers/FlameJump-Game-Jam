@@ -65,7 +65,7 @@ void Player_Update(Player *p, Body *playerBody, float dt)
     if (IsKeyDown(KEY_D)) h -= 1.0f;
     playerBody->vel.x = h * MOVE_SPEED;
     
-    if(IsKeyDown(KEY_W)) playerBody->vel.y = 1.0f * MOVE_SPEED;
+    if(IsKeyDown(KEY_W)) playerBody->vel.y = 2.0f * MOVE_SPEED;
 
     /* --- jump ------------------------------------------------------ */
     if (onGround && IsKeyPressed(KEY_SPACE)) {
@@ -105,7 +105,7 @@ void Player_Draw(const Player *p, const Camera *cam) {
                 WHITE);
 
     // Debug visualisation:
-    DrawBoundingBox(Player_GetWorldBBox(p, scale), RED);
+    // DrawBoundingBox(Player_GetWorldBBox(p, scale), RED);
 }
 
 // ------------------------------------------------ bbox helper

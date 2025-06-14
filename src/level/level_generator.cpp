@@ -2,124 +2,123 @@
 #include "level_generator.h"
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>      // for srand/time
+#include <time.h>
 
 /* ------------------------------------------------------------------ */
-/* one-time RNG seed                                                  */
-static void SeedRNG() {
+static void SeedRNG()
+{
     static bool seeded = false;
-    if (!seeded) {
-        srand((unsigned)time(NULL));   // new seed each boot
-        seeded = true;
-    }
+    if (!seeded) { srand((unsigned)time(NULL)); seeded = true; }
 }
 
-/* ------------------------------------------------------------------ */
-static inline Vector3 CellToWorld(int gx, int gy) {
+static inline int RowToBuf(const LevelGenerator *lg, int worldRow)
+{
+    int rel = worldRow - lg->baseRow;                 // 0…47
+    return (lg->headBuf + rel) % BUFFER_ROWS;         // physical slot
+}
+
+static inline Vector3 CellToWorld(int gx, int gy)
+{
     return (Vector3){ gx * CELL_WIDTH, gy * CELL_HEIGHT, 0.0f };
 }
 
-/* ---------- per-row random generation ----------------------------- */
-static void GenerateRow(LevelGenerator *lg, int worldRow) {
-    int count   = 1 + rand() % 3;      // 1-3 isolated platforms
-    int placed  = 0;
+/* -------- generate one row --------------------------------------- */
+static void GenerateRow(LevelGenerator *lg, int worldRow)
+{
+    int gy = RowToBuf(lg, worldRow);
+    memset(lg->grid[gy], 0, sizeof(Platform*) * GRID_WIDTH);
 
-    while (placed < count) {
-        int x = rand() % GRID_WIDTH;
+    int count = 1 + rand() % 3;
+    for (int placed = 0; placed < count; )
+    {
+        int x  = rand() % GRID_WIDTH;
+        bool ok = true;
+        for (int dx=-1; dx<=1 && ok; ++dx)
+            if (x+dx>=0 && x+dx<GRID_WIDTH &&
+                lg->grid[gy][x+dx]) ok=false;
 
-        // avoid neighbours in this worldRow
-        int gy = worldRow - lg->baseRow;
-        bool blocked = false;
-        for (int dx = -1; dx <= 1; ++dx) {
-            int nx = x + dx;
-            if (nx >= 0 && nx < GRID_WIDTH && lg->grid[gy][nx]) {
-                blocked = true;
-                break;
-            }
-        }
-        if (!blocked) {
-            lg->grid[gy][x] = lg->prototype;
-            placed++;
-        }
+        if (ok) { lg->grid[gy][x] = lg->prototype; placed++; }
     }
 }
 
-/* ---------- chunk generation (24 rows) ---------------------------- */
-static void GenerateChunk(LevelGenerator *lg) {
-    int startRow = lg->topRow + 1;
-    for (int r = 0; r < GRID_HEIGHT; ++r) {
-        int worldRow = startRow + r;
-        int gy       = worldRow - lg->baseRow;
+/* -------- generate 24-row chunk ---------------------------------- */
+static void GenerateChunk(LevelGenerator *lg)
+{
+    int start = lg->topRow + 1;
+    for (int r = 0; r < GRID_HEIGHT; ++r)
+        GenerateRow(lg, start + r);
 
-        memset(lg->grid[gy], 0, sizeof(Platform*) * GRID_WIDTH);
-        GenerateRow(lg, worldRow);
-    }
     lg->topRow += GRID_HEIGHT;
 }
 
 /* ------------------------------------------------------------------ */
-void LevelGenerator_Init(LevelGenerator *lg, Platform *prototype) {
-    SeedRNG();                         // NEW: ensures random layout per run
-
-    lg->prototype = prototype;
+void LevelGenerator_Init(LevelGenerator *lg, Platform *proto)
+{
+    SeedRNG();
+    lg->prototype = proto;
     memset(lg->grid, 0, sizeof(lg->grid));
 
     lg->baseRow = 0;
-    lg->topRow  = GRID_HEIGHT - 1;
+    lg->topRow  = BUFFER_ROWS - 1;   // first two chunks will fit
+    lg->headBuf = 0;
 
-    /* ---- fixed 5-platform starter floor (centred) ---------------- */
-    int startX = (GRID_WIDTH - START_FLOOR_PLATFORMS) / 2;
-    for (int i = 0; i < START_FLOOR_PLATFORMS; ++i) {
-        lg->grid[0][startX + i] = prototype;
-    }
+    /* starter strip (row 0) */
+    int mid = (GRID_WIDTH - START_FLOOR_PLATFORMS)/2;
+    for (int i=0;i<START_FLOOR_PLATFORMS;++i)
+        lg->grid[0][mid+i] = proto;
 
     lg->playerSpawn = (Vector3){
-        (startX + (float) START_FLOOR_PLATFORMS / 2) * CELL_WIDTH,
-        1.0f,
-        0.0f
-    };
+        (mid + START_FLOOR_PLATFORMS/2)*CELL_WIDTH, 1.0f, 0.0f };
 
-    /* ---- generate the rest of the first chunk (rows 1..23) ------- */
-    for (int row = 1; row < GRID_HEIGHT; ++row) {
-        GenerateRow(lg, row);
-    }
+    /* fill first chunk rows 1..23 */
+    for (int row=1; row<GRID_HEIGHT; ++row) GenerateRow(lg,row);
+
+    /* second chunk rows 24..47 */
+    for (int row=GRID_HEIGHT; row<BUFFER_ROWS; ++row) GenerateRow(lg,row);
 }
 
-void LevelGenerator_Update(LevelGenerator *lg, float playerY) {
+/* -------- runtime update ----------------------------------------- */
+void LevelGenerator_Update(LevelGenerator *lg, float playerY)
+{
     int playerRow = (int)(playerY / CELL_HEIGHT);
-    int threshold = lg->topRow - GRID_HEIGHT / 2;
 
-    if (playerRow >= threshold) {
-        lg->baseRow += GRID_HEIGHT;    // virtual shift
-        GenerateChunk(lg);             // new random chunk
+    /* generate new chunk when player enters upper half of second chunk */
+    int trigger = lg->baseRow + GRID_HEIGHT + GRID_HEIGHT/2;
+    if (playerRow >= trigger)
+    {
+        /* add third chunk on top */
+        GenerateChunk(lg);
+
+        /* drop bottom chunk by advancing baseRow */
+        lg->baseRow += GRID_HEIGHT;
+        lg->headBuf  = (lg->headBuf + GRID_HEIGHT) % BUFFER_ROWS;
     }
 }
 
-void LevelGenerator_Draw(const LevelGenerator *lg) {
-    for (int gy = 0; gy < GRID_HEIGHT; ++gy) {
-        int worldRow = lg->baseRow + gy;
-        for (int gx = 0; gx < GRID_WIDTH; ++gx) {
-            Platform *p = lg->grid[gy][gx];
-            if (p) {
+/* -------- draw ---------------------------------------------------- */
+void LevelGenerator_Draw(const LevelGenerator *lg)
+{
+    for (int worldRow = lg->baseRow;
+         worldRow <= lg->topRow;
+         ++worldRow)
+    {
+        int gy = RowToBuf(lg, worldRow);
+        for (int gx = 0; gx < GRID_WIDTH; ++gx)
+            if (Platform *p = lg->grid[gy][gx])
                 Platform_Draw(p, CellToWorld(gx, worldRow), 2.0f);
-            }
-        }
     }
 }
 
-/* ---------------------------------------------------------------
-   Return the Platform* at a given world-grid coordinate.
-   worldGX : 0‥GRID_WIDTH-1  (column index)
-   worldGY : absolute row index that keeps increasing upward
-   --------------------------------------------------------------- */
-Platform* LevelGenerator_Get(const LevelGenerator *lg, int worldGX, int worldGY) {
-    if (worldGX < 0 || worldGX >= GRID_WIDTH) return NULL;
-    if (worldGY < lg->baseRow)                return NULL;          // below buffer
-    int gy = worldGY - lg->baseRow;                                // 0‥GRID_HEIGHT-1
-    if (gy >= GRID_HEIGHT)                    return NULL;          // above buffer
+/* -------- lookup -------------------------------------------------- */
+Platform* LevelGenerator_Get(const LevelGenerator *lg,
+                             int worldGX, int worldGY)
+{
+    if (worldGX < 0 || worldGX >= GRID_WIDTH)   return NULL;
+    if (worldGY < lg->baseRow || worldGY > lg->topRow) return NULL;
+
+    int gy = RowToBuf(lg, worldGY);
     return lg->grid[gy][worldGX];
 }
 
-Vector3 LevelGenerator_GetSpawnPos(const LevelGenerator *lg) {
-    return lg->playerSpawn;
-}
+Vector3 LevelGenerator_GetSpawnPos(const LevelGenerator *lg)
+{ return lg->playerSpawn; }

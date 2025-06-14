@@ -22,7 +22,7 @@ void Platform_Unload(Platform *p) {
 void Platform_Draw(const Platform *p, Vector3 position, float scale) {
     DrawModel(p->model, position, scale, WHITE);
     // Uncomment to visualise collision box:
-    DrawBoundingBox(Platform_GetWorldBBox(p, position, scale), GREEN);
+    // DrawBoundingBox(Platform_GetWorldBBox(p, position, scale), GREEN);
 }
 
 // -------------------------------------------------- bounding-box query

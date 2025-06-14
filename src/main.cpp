@@ -39,7 +39,7 @@ int main(void) {
     // Window & camera
     // ------------------------------------------------------------------
     const int screenW = 1280, screenH = 720;
-    const int fbW = 512,  fbH = 256;   // low-res off-screen buffer NDS : 256, 192
+    const int fbW = 256,  fbH = 192;   // low-res off-screen buffer NDS : 256, 192
 
     InitWindow(screenW, screenH, "Ignite Jam");
 
@@ -75,7 +75,7 @@ int main(void) {
     camera.position   = { player.position.x, 8.0f, -18.0f }; 
     camera.target     = {player.position.x, player.position.y, player.position.z};
     camera.up         = { 0.0f, 1.0f,  0.0f };
-    camera.fovy       = 90.0f;
+    camera.fovy       = 60.0f;
     camera.projection = CAMERA_PERSPECTIVE; 
 
     // ------------------------------------------------------------------
@@ -118,7 +118,7 @@ int main(void) {
                                               (gy + dy) * CELL_HEIGHT, 0 },
                                               2.0f);
 
-                    ResolvePlatformCollision(&playerBody, &platBB, 0.3f, &onGround);
+                    ResolvePlatformCollision(&playerBody, &platBB, 0.1f, &onGround);
                 }
         player.position = playerBody.pos;   // hand back to render system
         

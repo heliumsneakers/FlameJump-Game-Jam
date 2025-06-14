@@ -11,14 +11,20 @@
 
 #define START_FLOOR_PLATFORMS 5  // contiguous starting floor
 
-typedef struct LevelGenerator {
-    Platform *prototype;                       // reusable platform model
-    Platform *grid[GRID_HEIGHT][GRID_WIDTH];   // current window cells
+/* ---- constants --------------------------------------------------- */
+#define BUFFER_ROWS (GRID_HEIGHT*2)
 
-    int baseRow;            // world row index corresponding to grid[0]
-    int topRow;             // highest generated world row so far
-    Vector3 playerSpawn;    // player spawn point.
-} LevelGenerator;
+/* ---- internal state ---------------------------------------------- */
+struct LevelGenerator {
+    Platform  *prototype;
+    Platform  *grid[BUFFER_ROWS][GRID_WIDTH];
+
+    int        baseRow;     // world row stored in grid[0][]
+    int        topRow;      // highest world row currently generated
+    int        headBuf;     // buffer row that corresponds to the base row 
+
+    Vector3    playerSpawn;
+};
 
 void LevelGenerator_Init(LevelGenerator *lg, Platform *prototype);
 void LevelGenerator_Update(LevelGenerator *lg, float playerY);
