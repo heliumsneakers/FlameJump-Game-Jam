@@ -23,6 +23,7 @@ typedef struct LevelGenerator {
 void LevelGenerator_Init(LevelGenerator *lg, Platform *prototype);
 void LevelGenerator_Update(LevelGenerator *lg, float playerY);
 void LevelGenerator_Draw(const LevelGenerator *lg);
+Platform* LevelGenerator_Get(const LevelGenerator *lg, int worldGX, int worldGY);
 Vector3 LevelGenerator_GetSpawnPos(const LevelGenerator *lg);
 
 #endif // LEVEL_GENERATOR_H

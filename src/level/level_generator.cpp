@@ -107,6 +107,19 @@ void LevelGenerator_Draw(const LevelGenerator *lg) {
     }
 }
 
+/* ---------------------------------------------------------------
+   Return the Platform* at a given world-grid coordinate.
+   worldGX : 0‥GRID_WIDTH-1  (column index)
+   worldGY : absolute row index that keeps increasing upward
+   --------------------------------------------------------------- */
+Platform* LevelGenerator_Get(const LevelGenerator *lg, int worldGX, int worldGY) {
+    if (worldGX < 0 || worldGX >= GRID_WIDTH) return NULL;
+    if (worldGY < lg->baseRow)                return NULL;          // below buffer
+    int gy = worldGY - lg->baseRow;                                // 0‥GRID_HEIGHT-1
+    if (gy >= GRID_HEIGHT)                    return NULL;          // above buffer
+    return lg->grid[gy][worldGX];
+}
+
 Vector3 LevelGenerator_GetSpawnPos(const LevelGenerator *lg) {
     return lg->playerSpawn;
 }

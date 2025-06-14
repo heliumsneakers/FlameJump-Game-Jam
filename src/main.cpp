@@ -5,6 +5,7 @@
 #include "player/player.h"
 #include "level/platform.h"
 #include "level/level_generator.h"
+#include "physics/physics.h"
 
 #if defined(PLATFORM_WEB)
 #define ASSET(x) "assets/" x
@@ -40,9 +41,17 @@ int main(void) {
                 ASSET("fireguy_tex.png"),
                 spawn);
 
+    Body playerBody = {
+        .pos        = spawn,
+        .vel        = {0, 0, 0},
+        .acc        = { 0, GRAVITY, 0 },
+        .mass       = 1.0f,
+        .localBBox  = player.localBBox 
+    };
+
     Camera camera{};
-    camera.position   = { player.position.x, 3.0f, -10.0f }; 
-    camera.target     = {player.position.x, player.position.y - 3.0f, player.position.z};
+    camera.position   = { player.position.x, 8.0f, -18.0f }; 
+    camera.target     = {player.position.x, player.position.y, player.position.z};
     camera.up         = { 0.0f, 1.0f,  0.0f };
     camera.fovy       = 90.0f;
     camera.projection = CAMERA_PERSPECTIVE; 
@@ -63,12 +72,31 @@ int main(void) {
     Rectangle src = { 0, 0, (float)fbW, -(float)fbH };
 
     SetTargetFPS(60);
+    DisableCursor();
 
     // ------------------------------------------------------------------
     while (!WindowShouldClose()) {
+
         float dt = GetFrameTime();
 
-        DisableCursor();
+        Body_Integrate(&playerBody, dt);
+
+        int gx = (int)floor(playerBody.pos.x / CELL_WIDTH);
+        int gy = (int)floor(playerBody.pos.y / CELL_HEIGHT);
+
+        for (int dy = -1; dy <= 1; ++dy)
+            for (int dx = -1; dx <= 1; ++dx)
+                if (Platform* p = LevelGenerator_Get(&level, gx + dx, gy + dy))
+                {
+                    BoundingBox platBB =
+                        Platform_GetWorldBBox(p,
+                                              { (gx + dx) * CELL_WIDTH,
+                                              (gy + dy) * CELL_HEIGHT, 0 },
+                                              2.0f);
+
+                    ResolvePlatformCollision(&playerBody, &platBB, 0.0f);
+                }
+        player.position = playerBody.pos;   // hand back to render system
 
         // -- update ----------------------------------------------------
         Player_IdleAnimation(&player, GetTime());
