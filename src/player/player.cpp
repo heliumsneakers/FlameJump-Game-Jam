@@ -1,9 +1,14 @@
 #include "player.h"
 #include "raymath.h"
+#include "../physics/physics.h"
 #include <stdlib.h>
 #include <math.h>
 
 #define Y_EPSILON 1e-6f
+#define MOVE_SPEED   6.0f      // units / s
+#define JUMP_FORCE  12.0f
+
+static bool    onGround  = false;
 
 // ------------------------------------------------ utility (unchanged)
 static float FindBaseY(Mesh *mesh) {
@@ -48,6 +53,36 @@ void Player_Init(Player *p, const char *objPath, const char *texPath, Vector3 sp
                     &p->apexIndices, &p->apexCount);
 
     p->localBBox = GetModelBoundingBox(p->model);   // NEW
+    onGround = false;
+}
+
+void Player_Update(Player *p, Body *playerBody, float dt)
+{
+    /* --- horizontal input ----------------------------------------- */
+    float h = 0.0f;
+    if (IsKeyDown(KEY_A)) h += 1.0f;
+    if (IsKeyDown(KEY_D)) h -= 1.0f;
+    playerBody->vel.x = h * MOVE_SPEED;
+
+    /* --- jump ------------------------------------------------------ */
+    if (onGround && IsKeyPressed(KEY_SPACE)) {
+        playerBody->vel.y = JUMP_FORCE;
+        onGround   = false;
+    }
+
+    /* --- gravity --------------------------------------------------- */
+    playerBody->vel.y += GRAVITY * dt;
+
+    /* --- integrate ------------------------------------------------- */
+    p->position.x += playerBody->vel.x * dt;
+    p->position.y += playerBody->vel.y * dt;
+
+    /* --- simple ground clamp (y=1.0) ------------------------------ */
+    if (p->position.y < 1.0f) {
+        p->position.y = 1.0f;
+        playerBody->vel.y    = 0.0f;
+        onGround      = true;
+    }
 }
 
 void Player_Unload(Player *p) {

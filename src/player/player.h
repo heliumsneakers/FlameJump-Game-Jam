@@ -3,6 +3,7 @@
 #define PLAYER_H
 
 #include "raylib.h"
+#include "../physics/physics.h"
 
 // Player struct holds model, texture, and animation data
 typedef struct Player {
@@ -19,6 +20,8 @@ typedef struct Player {
 
 // Initialize the player: load model, texture, and prepare apex data
 void Player_Init(Player *player, const char *objPath, const char *texPath, Vector3 spawnPos);
+
+void Player_Update(Player *p, Body *playerBody, float dt);
 
 // Unload player resources
 void Player_Unload(Player *player);

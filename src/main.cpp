@@ -34,6 +34,7 @@ int main(void) {
     LevelGenerator_Init(&level, &proto);
 
     Vector3 spawn = LevelGenerator_GetSpawnPos(&level);
+    spawn.y = spawn.y + 3.0f;
 
     Player player;
     Player_Init(&player,
@@ -77,7 +78,9 @@ int main(void) {
     // ------------------------------------------------------------------
     while (!WindowShouldClose()) {
 
-        float dt = GetFrameTime();
+        float dt = 0.02f; // Frame rate independent of course! frametime = bleh.
+
+        Player_Update(&player, &playerBody, dt);
 
         Body_Integrate(&playerBody, dt);
 
@@ -94,13 +97,13 @@ int main(void) {
                                               (gy + dy) * CELL_HEIGHT, 0 },
                                               2.0f);
 
-                    ResolvePlatformCollision(&playerBody, &platBB, 0.0f);
+                    ResolvePlatformCollision(&playerBody, &platBB, 0.8f);
                 }
         player.position = playerBody.pos;   // hand back to render system
 
         // -- update ----------------------------------------------------
         Player_IdleAnimation(&player, GetTime());
-        UpdateCamera(&camera, CAMERA_THIRD_PERSON);
+        UpdateCamera(&camera, CAMERA_PERSPECTIVE);
 
         // Advance level if player climbs past halfway point
         LevelGenerator_Update(&level, player.position.y);
