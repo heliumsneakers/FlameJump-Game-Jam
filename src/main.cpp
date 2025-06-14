@@ -34,9 +34,6 @@ int main(void) {
 
     Vector3 spawn = LevelGenerator_GetSpawnPos(&level);
 
-    // ------------------------------------------------------------------
-    // Player (always drawn at 0,1,0 — y rises as the game progresses)
-    // ------------------------------------------------------------------
     Player player;
     Player_Init(&player,
                 ASSET("fireguy.obj"),
@@ -96,8 +93,8 @@ int main(void) {
         DrawTexturePro(rt.texture, src, dest, { 0, 0 }, 0, WHITE);
         EndDrawing();
     }
-
     // ------------------------------------------------------------------
+
     UnloadRenderTexture(rt);
     Platform_Unload(&proto);
     Player_Unload(&player);
