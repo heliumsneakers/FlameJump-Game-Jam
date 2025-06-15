@@ -5,6 +5,8 @@
 #include "raylib.h"
 #include "../physics/physics.h"
 
+#define FOOT_SIZE   0.2f
+
 extern bool onGround;
 
 // Player struct holds model, texture, and animation data
@@ -35,5 +37,6 @@ void Player_Draw(const Player *player, const Camera *camera);
 void Player_IdleAnimation(Player *player, float time);
 void Player_UpdateRotation(Player *player, float deltaAngle);
 BoundingBox Player_GetWorldBBox(const Player *p, Vector3 scale);
+BoundingBox Player_GetFootBox(const Player *p, Vector3 scale, float side);
 
 #endif // PLAYER_H

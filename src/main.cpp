@@ -13,10 +13,7 @@
 #define ASSET(x) "../assets/" x
 #endif
 
-static void CameraSmoothFollow(Camera* cam,
-                               Vector3 playerPos,
-                               float   dt)
-{
+static void CameraSmoothFollow(Camera* cam, Vector3 playerPos, float dt) {
     /* desired offset from player */
     const float CAM_HEIGHT   =  8.0f;
     const float CAM_DISTANCE = -22.0f;     // along –Z
@@ -102,11 +99,14 @@ int main(void) {
         float dt = 0.02f; // Frame rate independent of course! frametime = bleh.
 
         Player_Update(&player, &playerBody, dt);
-
         Body_Integrate(&playerBody, dt);
+
+        BoundingBox playerFeet = Player_GetFootBox(&player, {1.5f,1.5f,1.5f}, FOOT_SIZE);
 
         int gx = (int)floor(playerBody.pos.x / CELL_WIDTH);
         int gy = (int)floor(playerBody.pos.y / CELL_HEIGHT);
+
+        bool landedThisFrame = false;
 
         for (int dy = -1; dy <= 1; ++dy)
             for (int dx = -1; dx <= 1; ++dx)
@@ -118,8 +118,10 @@ int main(void) {
                                               (gy + dy) * CELL_HEIGHT, 0 },
                                               2.0f);
 
-                    ResolvePlatformCollision(&playerBody, &platBB, 0.1f, &onGround);
+                    ResolvePlatformCollision(&playerBody, &platBB, &playerFeet, 0.15f, &landedThisFrame);
                 }
+        onGround = landedThisFrame;
+
         player.position = playerBody.pos;   // hand back to render system
         
         CameraSmoothFollow(&camera, player.position, dt);

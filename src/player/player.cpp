@@ -10,6 +10,8 @@
 #define JUMP_FORCE  12.0f
 
 bool onGround = false;
+static const float COYOTE_MAX = 0.15f;   // 150 ms grace
+static float coyoteTimer = 0.0f;         // persists across frames
 
 // ------------------------------------------------ utility (unchanged)
 static float FindBaseY(Mesh *mesh) {
@@ -57,8 +59,7 @@ void Player_Init(Player *p, const char *objPath, const char *texPath, Vector3 sp
     onGround = false;
 }
 
-void Player_Update(Player *p, Body *playerBody, float dt)
-{
+void Player_Update(Player *p, Body *playerBody, float dt) {
     /* --- horizontal input ----------------------------------------- */
     float h = 0.0f;
     if (IsKeyDown(KEY_A)) h += 1.0f;
@@ -67,10 +68,18 @@ void Player_Update(Player *p, Body *playerBody, float dt)
     
     if(IsKeyDown(KEY_W)) playerBody->vel.y = 5.0f * MOVE_SPEED;
 
-    /* --- jump ------------------------------------------------------ */
-    if (onGround && IsKeyPressed(KEY_SPACE)) {
-        playerBody->vel.y = JUMP_FORCE;
-        onGround   = false;
+    /* ------------ coyote timer update ----------------------------- */
+    if (onGround)
+        coyoteTimer = COYOTE_MAX;        // refresh while grounded
+    else
+        coyoteTimer -= dt;               // tick down in the air
+
+    /* ------------ jump -------------------------------------------- */
+    if (coyoteTimer > 0.0f && IsKeyPressed(KEY_SPACE))
+    {
+        playerBody->vel.y   = JUMP_FORCE;
+        onGround            = false;
+        coyoteTimer         = 0.0f;              // consume the jump
     }
 
     /* --- gravity --------------------------------------------------- */
@@ -80,12 +89,6 @@ void Player_Update(Player *p, Body *playerBody, float dt)
     p->position.x += playerBody->vel.x * dt;
     p->position.y += playerBody->vel.y * dt;
 
-    /* --- simple ground clamp (y=1.0) ------------------------------ */
-    if (p->position.y < 1.0f) {
-        p->position.y = 1.0f;
-        playerBody->vel.y    = 0.0f;
-        onGround      = true;
-    }
 }
 
 void Player_Unload(Player *p) {
@@ -105,19 +108,53 @@ void Player_Draw(const Player *p, const Camera *cam) {
                 WHITE);
 
     // Debug visualisation:
-    // DrawBoundingBox(Player_GetWorldBBox(p, scale), RED);
+    DrawBoundingBox(Player_GetWorldBBox(p, scale), RED);
+    DrawBoundingBox(Player_GetFootBox(p, scale, FOOT_SIZE), BLUE);
 }
 
-// ------------------------------------------------ bbox helper
 BoundingBox Player_GetWorldBBox(const Player *p, Vector3 scale) {
     BoundingBox bb = p->localBBox;
 
-    // scale
-    bb.min = Vector3Scale(bb.min, scale.x);   // uniform scale
+    // 1) uniform scale
+    bb.min = Vector3Scale(bb.min, scale.x);
     bb.max = Vector3Scale(bb.max, scale.x);
 
-    // translate
+    // 2) translate to world space
     bb.min = Vector3Add(bb.min, p->position);
     bb.max = Vector3Add(bb.max, p->position);
+
+    // 3) shrink a bit:  20 % narrower (X & Z)  and 10 % shorter (Y)
+    float shrinkX = (bb.max.x - bb.min.x) * 0.20f;   // each side
+    float shrinkZ = (bb.max.z - bb.min.z) * 0.20f;
+    float shrinkY = (bb.max.y - bb.min.y) * 0.20f;
+
+    bb.min.x += shrinkX;
+    bb.max.x -= shrinkX;
+    bb.min.z += shrinkZ;
+    bb.max.z -= shrinkZ;
+
+    bb.min.y += shrinkY;          // raise the floor a bit
+    // (optionally) bb.max.y -= shrinkY;  // lower the head if desired
+
     return bb;
+}
+
+BoundingBox Player_GetFootBox(const Player *p,
+                               Vector3 scale,
+                               float   side)
+{
+    /* full‐body world bbox */
+    BoundingBox wb = Player_GetWorldBBox(p, scale);
+
+    /* foot centre = middle of XZ, lowest Y */
+    float cx = (wb.min.x + wb.max.x) * 0.5f;
+    float cz = (wb.min.z + wb.max.z) * 0.5f;
+    float cy =  wb.min.y;                      // feet plane
+
+    float h = side * 0.5f;                     // half side
+
+    BoundingBox cube;
+    cube.min = (Vector3){ cx - h, cy - h, cz - h };
+    cube.max = (Vector3){ cx + h, cy + h, cz + h };
+    return cube;
 }

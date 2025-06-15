@@ -27,4 +27,6 @@ static inline BoundingBox Body_GetWorldBox(const Body *b) {
     return bb;
 }
 
-bool ResolvePlatformCollision (Body *player, const BoundingBox *platBox, float restitution, bool *landed);
+bool ResolvePlatformCollision (Body *player, const BoundingBox *platBox, const BoundingBox *footBox, float restitution, bool *landed);
+
+
