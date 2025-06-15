@@ -47,9 +47,11 @@ int main(void) {
     Platform_Init(&proto,
                   ASSET("woodplatform.obj"),
                   ASSET("woodplatform_tex.png"));
+    Platform ember;
+    Platform_Init(&ember, ASSET("ember.obj"), ASSET("ember.png"));
 
     LevelGenerator level;
-    LevelGenerator_Init(&level, &proto);
+    LevelGenerator_Init(&level, &proto, &ember);
 
     Vector3 spawn = LevelGenerator_GetSpawnPos(&level);
     spawn.y = spawn.y + 3.0f;
@@ -118,7 +120,7 @@ int main(void) {
                                               (gy + dy) * CELL_HEIGHT, 0 },
                                               2.0f);
 
-                    ResolvePlatformCollision(&playerBody, &platBB, &playerFeet, 0.15f, &landedThisFrame);
+                    ResolvePlatformCollision(&playerBody, &platBB, &playerFeet, 0.01f, &landedThisFrame);
                 }
         onGround = landedThisFrame;
 

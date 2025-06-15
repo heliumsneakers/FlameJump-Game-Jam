@@ -7,7 +7,7 @@
 
 #define Y_EPSILON 1e-6f
 #define MOVE_SPEED   6.0f      // units / s
-#define JUMP_FORCE  12.0f
+#define JUMP_FORCE  20.0f
 
 bool onGround = false;
 static const float COYOTE_MAX = 0.15f;   // 150 ms grace

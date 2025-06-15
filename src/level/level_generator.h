@@ -17,6 +17,7 @@
 /* ---- internal state ---------------------------------------------- */
 struct LevelGenerator {
     Platform  *prototype;
+    Platform  *emberProto;
     Platform  *grid[BUFFER_ROWS][GRID_WIDTH];
 
     int        baseRow;     // world row stored in grid[0][]
@@ -26,7 +27,7 @@ struct LevelGenerator {
     Vector3    playerSpawn;
 };
 
-void LevelGenerator_Init(LevelGenerator *lg, Platform *prototype);
+void LevelGenerator_Init(LevelGenerator *lg, Platform *prototype, Platform *emberProto);
 void LevelGenerator_Update(LevelGenerator *lg, float playerY);
 void LevelGenerator_Draw(const LevelGenerator *lg);
 Platform* LevelGenerator_Get(const LevelGenerator *lg, int worldGX, int worldGY);
