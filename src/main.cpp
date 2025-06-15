@@ -19,8 +19,8 @@ static void CameraSmoothFollow(Camera* cam,
 {
     /* desired offset from player */
     const float CAM_HEIGHT   =  8.0f;
-    const float CAM_DISTANCE = -18.0f;     // along –Z
-    const float SMOOTH_SPEED =  8.0f;      // larger = snappier
+    const float CAM_DISTANCE = -22.0f;     // along –Z
+    const float SMOOTH_SPEED =  0.5f;      // larger = snappier
 
     Vector3 desiredPos = {
         playerPos.x,
