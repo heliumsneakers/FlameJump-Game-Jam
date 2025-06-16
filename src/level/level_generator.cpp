@@ -101,7 +101,6 @@ static void GenerateChunk(LevelGenerator *lg)
     lg->topRow += GRID_HEIGHT;
 }
 
-/* ------------------------ public API ------------------------------ */
 void LevelGenerator_Init(LevelGenerator *lg,
                          Platform *platformProto,
                          Platform *emberProto)
@@ -141,6 +140,13 @@ void LevelGenerator_Update(LevelGenerator *lg, float playerY)
         lg->baseRow += GRID_HEIGHT;             // slide window up
         lg->headBuf  = (lg->headBuf + GRID_HEIGHT) % BUFFER_ROWS;
     }
+}
+
+void LevelGenerator_ClearCell(LevelGenerator *lg, int wx, int wy)
+{
+    if (wx < 0 || wx >= GRID_WIDTH)  return;
+    if (wy < lg->baseRow || wy > lg->topRow) return;
+    lg->grid[ RowToBuf(lg, wy) ][ wx ] = NULL;
 }
 
 void LevelGenerator_Draw(const LevelGenerator *lg)

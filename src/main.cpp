@@ -104,6 +104,7 @@ int main(void) {
         Body_Integrate(&playerBody, dt);
 
         BoundingBox playerFeet = Player_GetFootBox(&player, {1.5f,1.5f,1.5f}, FOOT_SIZE);
+        BoundingBox playerBB = Player_GetWorldBBox(&player, (Vector3){1.5f,1.5f,1.5f});
 
         int gx = (int)floor(playerBody.pos.x / CELL_WIDTH);
         int gy = (int)floor(playerBody.pos.y / CELL_HEIGHT);
@@ -112,20 +113,45 @@ int main(void) {
 
         for (int dy = -1; dy <= 1; ++dy)
             for (int dx = -1; dx <= 1; ++dx)
-                if (Platform* p = LevelGenerator_Get(&level, gx + dx, gy + dy))
+            {
+                int wx = gx + dx;
+                int wy = gy + dy;
+
+                Platform *cell = LevelGenerator_Get(&level, wx, wy);
+
+                if (!cell) continue;
+
+                /* ---------- PLATFORM handling ----------------------------- */
+                if (cell == &proto)          /* wooden platform */
                 {
-                    BoundingBox platBB =
-                        Platform_GetWorldBBox(p,
-                                              { (gx + dx) * CELL_WIDTH,
-                                              (gy + dy) * CELL_HEIGHT, 0 },
-                                              2.0f);
+                    BoundingBox platBB = Platform_GetWorldBBox(
+                        cell,
+                        { wx*CELL_WIDTH, wy*CELL_HEIGHT, 0 }, 2.0f);
 
-                    ResolvePlatformCollision(&playerBody, &platBB, &playerFeet, 0.01f, &landedThisFrame);
+                    ResolvePlatformCollision(&playerBody,
+                                             &platBB,
+                                             &playerFeet,
+                                             0.01f,
+                                             &landedThisFrame);   // <─ set only here
                 }
-        onGround = landedThisFrame;
+                /* ---------- EMBER handling -------------------------------- */
+                else if (cell == &ember)
+                {
+                    BoundingBox emberBB = Platform_GetWorldBBox(
+                        cell,
+                        { wx*CELL_WIDTH, wy*CELL_HEIGHT, 0 }, 1.0f);
 
+                    if (CheckCollisionBoxes(playerBB, emberBB))
+                    { 
+                        LevelGenerator_ClearCell(&level, wx, wy); // remove ember
+                        Player_RefreshJump();                     // give stored jump
+                    }
+                }
+            }
+
+        onGround = landedThisFrame;          // ← ember never influences this flag
         player.position = playerBody.pos;   // hand back to render system
-        
+
         CameraSmoothFollow(&camera, player.position, dt);
 
         // -- update ----------------------------------------------------

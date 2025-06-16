@@ -36,6 +36,7 @@ void Player_Draw(const Player *player, const Camera *camera);
 // Animation helpers: bob apex vertices and rotate model
 void Player_IdleAnimation(Player *player, float time);
 void Player_UpdateRotation(Player *player, float deltaAngle);
+void Player_RefreshJump(void);
 BoundingBox Player_GetWorldBBox(const Player *p, Vector3 scale);
 BoundingBox Player_GetFootBox(const Player *p, Vector3 scale, float side);
 

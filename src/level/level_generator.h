@@ -29,6 +29,7 @@ struct LevelGenerator {
 
 void LevelGenerator_Init(LevelGenerator *lg, Platform *prototype, Platform *emberProto);
 void LevelGenerator_Update(LevelGenerator *lg, float playerY);
+void LevelGenerator_ClearCell(LevelGenerator *lg, int worldGX, int worldGY);
 void LevelGenerator_Draw(const LevelGenerator *lg);
 Platform* LevelGenerator_Get(const LevelGenerator *lg, int worldGX, int worldGY);
 Vector3 LevelGenerator_GetSpawnPos(const LevelGenerator *lg);

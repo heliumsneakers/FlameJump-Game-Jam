@@ -7,9 +7,10 @@
 
 #define Y_EPSILON 1e-6f
 #define MOVE_SPEED   6.0f      // units / s
-#define JUMP_FORCE  20.0f
+#define JUMP_FORCE  18.0f
 
 bool onGround = false;
+bool canJump  = false;
 static const float COYOTE_MAX = 0.15f;   // 150 ms grace
 static float coyoteTimer = 0.0f;         // persists across frames
 
@@ -59,6 +60,11 @@ void Player_Init(Player *p, const char *objPath, const char *texPath, Vector3 sp
     onGround = false;
 }
 
+void Player_RefreshJump(void) {
+    canJump = true;
+    coyoteTimer = COYOTE_MAX;
+}
+
 void Player_Update(Player *p, Body *playerBody, float dt) {
     /* --- horizontal input ----------------------------------------- */
     float h = 0.0f;
@@ -69,17 +75,19 @@ void Player_Update(Player *p, Body *playerBody, float dt) {
     if(IsKeyDown(KEY_W)) playerBody->vel.y = 5.0f * MOVE_SPEED;
 
     /* ------------ coyote timer update ----------------------------- */
-    if (onGround)
-        coyoteTimer = COYOTE_MAX;        // refresh while grounded
-    else
+    if (onGround) {
+        coyoteTimer = COYOTE_MAX;
+        canJump = true;                  // refresh while grounded
+    } else {
         coyoteTimer -= dt;               // tick down in the air
+    }
 
-    /* ------------ jump -------------------------------------------- */
-    if (coyoteTimer > 0.0f && IsKeyPressed(KEY_SPACE))
+    if (IsKeyPressed(KEY_SPACE) && (canJump || coyoteTimer > 0.0f))
     {
-        playerBody->vel.y   = JUMP_FORCE;
-        onGround            = false;
-        coyoteTimer         = 0.0f;              // consume the jump
+        playerBody->vel.y  = JUMP_FORCE;
+        onGround     = false;
+        canJump      = false;        // consume stored jump
+        coyoteTimer  = 0.0f;         // consume grace window
     }
 
     /* --- gravity --------------------------------------------------- */
