@@ -17,6 +17,10 @@ extern const float GRAVITY;
 void Physics_SetLevelGenerator(LevelGenerator *lg);
 void Physics_Update(float dt);
 
+int  Physics_GetPendingCount(void);
+/// For i in [0..count), fill (*gx,*gy) and *t where t goes from 1 → 0.
+void Physics_GetPending(int i, int *gx, int *gy, float *timerNorm);
+
 // integrate one step
 static inline void Body_Integrate(Body *b, float dt) {
     b->vel = Vector3Add(b->vel, Vector3Scale(b->acc, dt));   // v += a·dt

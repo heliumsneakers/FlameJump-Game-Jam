@@ -7,7 +7,7 @@
 
 #define Y_EPSILON 1e-6f
 #define MOVE_SPEED   6.0f      // units / s
-#define JUMP_FORCE  18.0f
+float JUMP_FORCE = 18.0f;
 
 bool onGround = false;
 bool canJump  = false;
@@ -16,6 +16,8 @@ float lightRad = 5.0f;
 
 static const float COYOTE_MAX = 0.15f;   // 150 ms grace
 static float coyoteTimer = 0.0f;         // persists across frames
+
+Sound jumpSound;
 
 // ------------------------------------------------ utility (unchanged)
 static float FindBaseY(Mesh *mesh) {
@@ -61,11 +63,14 @@ void Player_Init(Player *p, const char *objPath, const char *texPath, Vector3 sp
 
     p->localBBox = GetModelBoundingBox(p->model);   // NEW
     onGround = false;
+    jumpSound = LoadSound("../../assets/sounds/jump.wav");
+    SetSoundVolume(jumpSound, 0.7f);
 }
 
 void Player_RefreshJump(void) {
     canJump = true;
     coyoteTimer = COYOTE_MAX;
+    JUMP_FORCE = 24.0f;
 }
 
 void Player_Update(Player *p, Body *playerBody, float dt) {
@@ -79,16 +84,18 @@ void Player_Update(Player *p, Body *playerBody, float dt) {
     if (onGround) {
         coyoteTimer = COYOTE_MAX;
         canJump = true;                  // refresh while grounded
+        JUMP_FORCE = 18.0f;
     } else {
         coyoteTimer -= dt;              // tick down in the air
     }
 
     if (IsKeyPressed(KEY_SPACE) && (canJump || coyoteTimer > 0.0f))
     {
+        PlaySound(jumpSound);
         playerBody->vel.y  = JUMP_FORCE;
         onGround     = false;
         canJump      = false;        // consume stored jump
-        coyoteTimer  = 0.0f;         // consume grace windo
+        coyoteTimer  = 0.0f;         // consume grace window
     }
 
     if(canJump) lightRad = 4.0f;

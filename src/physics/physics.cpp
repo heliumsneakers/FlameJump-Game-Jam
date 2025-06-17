@@ -1,5 +1,6 @@
 #include "physics.h"
 #include "../level/level_generator.h"
+#include "raylib.h"
 #include <math.h>
 #include <string.h>
 
@@ -17,10 +18,15 @@ static LevelGenerator *sLevel = NULL;
 
 const float GRAVITY = -9.8f;
 
+Sound fireSound;
+
 void Physics_SetLevelGenerator(LevelGenerator *lg) {
     sLevel = lg;
     // clear any old entries
     memset(sPendings, 0, sizeof(sPendings));
+    // load firesound for platforms
+    fireSound = LoadSound("../../assets/sounds/fire.wav");
+    SetSoundVolume(fireSound, 0.3f);
 }
 
 void Physics_Update(float dt) {
@@ -57,7 +63,7 @@ bool ResolvePlatformCollision(Body *player,
     player->vel.y    = -player->vel.y * restitution;
     if (landed) *landed = true;
 
-    // schedule that grid‐cell to vanish in 3 s
+    // schedule that grid‐cell to vanish
     if (sLevel) {
         // compute the world‐grid coords of this platform
         int worldGX = (int)floor(player->pos.x / CELL_WIDTH);
@@ -81,7 +87,8 @@ bool ResolvePlatformCollision(Body *player,
                     sPendings[i].active = true;
                     sPendings[i].gx     = worldGX;
                     sPendings[i].gy     = worldGY;
-                    sPendings[i].timer  = 0.5f;    // three‐second fuse
+                    sPendings[i].timer  = 0.5f; 
+                    PlaySound(fireSound);
                     break;
                 }
             }
@@ -89,4 +96,33 @@ bool ResolvePlatformCollision(Body *player,
     }
 
     return true;
+}
+
+// Returns number of active pendings
+int Physics_GetPendingCount(void) {
+    int c = 0;
+    for (int i = 0; i < MAX_PENDINGS; i++)
+        if (sPendings[i].active) c++;
+    return c;
+}
+
+/// Fills out the i-th pending’s cell coords and normalized timer [1→0]
+void Physics_GetPending(int i, int *gx, int *gy, float *timerNorm) {
+    // walk until we find the i-th
+    int found = 0;
+    for (int j = 0; j < MAX_PENDINGS; j++) {
+        if (!sPendings[j].active) continue;
+        if (found == i) {
+            *gx = sPendings[j].gx;
+            *gy = sPendings[j].gy;
+            // if fuse was set to, say, 3s, timerNorm = rem/3
+            // but here we used .5f, so we assume original = 0.5f
+            *timerNorm = sPendings[j].timer / 0.5f;
+            return;
+        }
+        found++;
+    }
+    // safety fall-through
+    *gx = *gy = 0;
+    *timerNorm = 0;
 }

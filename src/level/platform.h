@@ -3,6 +3,8 @@
 
 #include "raylib.h"
 
+extern Color platColor;
+
 typedef struct Platform {
     Model       model;
     Texture2D   texture;
