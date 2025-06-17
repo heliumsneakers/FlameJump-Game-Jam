@@ -38,7 +38,7 @@ int main(void) {
     // ------------------------------------------------------------------
     const int screenW = 1280, screenH = 720;
     const int fbW = 256,  fbH = 192;   // low-res off-screen buffer NDS : 256, 192
-
+ 
     InitWindow(screenW, screenH, "Ignite Jam");
 
     // ------------------------------------------------------------------
@@ -104,6 +104,12 @@ int main(void) {
     };
     Rectangle src = { 0, 0, (float)fbW, -(float)fbH };
 
+
+    // SCORING
+    int score = 0;
+    int maxRow     = (int)floor(spawn.y / CELL_HEIGHT);  // highest row reached so far
+    const int EMBER_SCORE = 50;                           // flat bonus per ember
+
     SetTargetFPS(60);
     DisableCursor();
 
@@ -115,6 +121,13 @@ int main(void) {
         Player_Update(&player, &playerBody, dt);
         Body_Integrate(&playerBody, dt);
         Physics_Update(dt);
+
+        // each frame, see if we've climbed into a new grid‐row
+        int curRow = (int)floor(playerBody.pos.y / CELL_HEIGHT);
+        if (curRow > maxRow) {
+            score += (curRow - maxRow) + 4;  // +1 point per row
+            maxRow = curRow;
+        }
 
         // Conditional for game over restart
         if (playerBody.pos.y < -5.0f) {
@@ -184,6 +197,7 @@ int main(void) {
                     { 
                         LevelGenerator_ClearCell(&level, wx, wy); // remove ember
                         Player_RefreshJump();                     // give stored jump
+                        score += EMBER_SCORE;
                     }
                 }
             }
@@ -203,8 +217,8 @@ int main(void) {
 
         // -- draw ------------------------------------------------------
         BeginTextureMode(rt);
-        ClearBackground(BLACK);
 
+        ClearBackground(BLACK);
         BeginMode3D(camera);
         LevelGenerator_Draw(&level);     // draw all platforms
         Player_Draw(&player, &camera);   // draw player
@@ -214,8 +228,11 @@ int main(void) {
         EndTextureMode();
 
         BeginDrawing();
+
         ClearBackground(BLACK);
         DrawTexturePro(rt.texture, src, dest, { 0, 0 }, 0, WHITE);
+        DrawText(TextFormat("Score: %d", score), 10, 10, 30, WHITE);
+
         EndDrawing();
     }
     // ------------------------------------------------------------------
