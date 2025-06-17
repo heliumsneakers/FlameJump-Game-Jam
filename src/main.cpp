@@ -5,6 +5,7 @@
 #include "player/player.h"
 #include "level/platform.h"
 #include "level/level_generator.h"
+#include "level/light.h"
 #include "physics/physics.h"
 
 #if defined(PLATFORM_WEB)
@@ -53,6 +54,8 @@ int main(void) {
     LevelGenerator level;
     LevelGenerator_Init(&level, &proto, &ember);
 
+    Physics_SetLevelGenerator(&level);
+
     Vector3 spawn = LevelGenerator_GetSpawnPos(&level);
     spawn.y = spawn.y + 3.0f;
 
@@ -76,6 +79,15 @@ int main(void) {
     camera.up         = { 0.0f, 1.0f,  0.0f };
     camera.fovy       = 60.0f;
     camera.projection = CAMERA_PERSPECTIVE; 
+
+    // ------------------------------------------------------------------
+    // Lights!
+    // ------------------------------------------------------------------
+    Light_Reset();
+    int playerLight = Light_Add(
+                                (Vector3){player.position.x, player.position.y + .5f, player.position.z}, // Position
+                                lightRad, // Radius
+                                (Color){255,160,100,180}); // Light Color
 
     // ------------------------------------------------------------------
     // Off-screen render target
@@ -102,6 +114,7 @@ int main(void) {
 
         Player_Update(&player, &playerBody, dt);
         Body_Integrate(&playerBody, dt);
+        Physics_Update(dt);
 
         BoundingBox playerFeet = Player_GetFootBox(&player, {1.5f,1.5f,1.5f}, FOOT_SIZE);
         BoundingBox playerBB = Player_GetWorldBBox(&player, (Vector3){1.5f,1.5f,1.5f});
@@ -159,6 +172,8 @@ int main(void) {
 
         // Advance level if player climbs past halfway point
         LevelGenerator_Update(&level, player.position.y);
+        // Update player emitter light position
+        Light_UpdatePos(playerLight, (Vector3){player.position.x, player.position.y + .5f, player.position.z}, lightRad);
 
         // -- draw ------------------------------------------------------
         BeginTextureMode(rt);
@@ -167,6 +182,7 @@ int main(void) {
         BeginMode3D(camera);
         LevelGenerator_Draw(&level);     // draw all platforms
         Player_Draw(&player, &camera);   // draw player
+        Light_DrawAll(camera);
         EndMode3D();
 
         EndTextureMode();

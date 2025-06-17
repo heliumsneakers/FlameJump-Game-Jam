@@ -2,6 +2,7 @@
 #pragma once
 #include "raylib.h"
 #include "raymath.h"
+#include "../level/level_generator.h"
 
 typedef struct Body {
     Vector3 pos;       // centre
@@ -12,6 +13,9 @@ typedef struct Body {
 } Body;
 
 extern const float GRAVITY;
+
+void Physics_SetLevelGenerator(LevelGenerator *lg);
+void Physics_Update(float dt);
 
 // integrate one step
 static inline void Body_Integrate(Body *b, float dt) {

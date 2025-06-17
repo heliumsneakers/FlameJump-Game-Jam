@@ -11,6 +11,9 @@
 
 bool onGround = false;
 bool canJump  = false;
+
+float lightRad = 5.0f;
+
 static const float COYOTE_MAX = 0.15f;   // 150 ms grace
 static float coyoteTimer = 0.0f;         // persists across frames
 
@@ -79,7 +82,7 @@ void Player_Update(Player *p, Body *playerBody, float dt) {
         coyoteTimer = COYOTE_MAX;
         canJump = true;                  // refresh while grounded
     } else {
-        coyoteTimer -= dt;               // tick down in the air
+        coyoteTimer -= dt;              // tick down in the air
     }
 
     if (IsKeyPressed(KEY_SPACE) && (canJump || coyoteTimer > 0.0f))
@@ -87,8 +90,11 @@ void Player_Update(Player *p, Body *playerBody, float dt) {
         playerBody->vel.y  = JUMP_FORCE;
         onGround     = false;
         canJump      = false;        // consume stored jump
-        coyoteTimer  = 0.0f;         // consume grace window
+        coyoteTimer  = 0.0f;         // consume grace windo
     }
+
+    if(canJump) lightRad = 4.0f;
+    else lightRad = 3.0f;
 
     /* --- gravity --------------------------------------------------- */
     playerBody->vel.y += GRAVITY * dt;
@@ -116,8 +122,8 @@ void Player_Draw(const Player *p, const Camera *cam) {
                 WHITE);
 
     // Debug visualisation:
-    DrawBoundingBox(Player_GetWorldBBox(p, scale), RED);
-    DrawBoundingBox(Player_GetFootBox(p, scale, FOOT_SIZE), BLUE);
+    // DrawBoundingBox(Player_GetWorldBBox(p, scale), RED);
+    // DrawBoundingBox(Player_GetFootBox(p, scale, FOOT_SIZE), BLUE);
 }
 
 BoundingBox Player_GetWorldBBox(const Player *p, Vector3 scale) {

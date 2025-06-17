@@ -159,7 +159,7 @@ void LevelGenerator_Draw(const LevelGenerator *lg)
             Platform *p = lg->grid[gy][gx];
             if (!p) continue;
 
-            float scale = (p == lg->prototype) ? 2.0f : 1.0f;
+            float scale = (p == lg->prototype) ? 2.0f : 2.0f;
             Platform_Draw(p, CellToWorld(gx, worldRow), scale);
         }
     }

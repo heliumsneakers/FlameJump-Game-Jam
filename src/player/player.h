@@ -1,13 +1,12 @@
-/* player.h */
-#ifndef PLAYER_H
-#define PLAYER_H
-
+#pragma once
 #include "raylib.h"
 #include "../physics/physics.h"
+
 
 #define FOOT_SIZE   0.2f
 
 extern bool onGround;
+extern float lightRad;
 
 // Player struct holds model, texture, and animation data
 typedef struct Player {
@@ -39,5 +38,3 @@ void Player_UpdateRotation(Player *player, float deltaAngle);
 void Player_RefreshJump(void);
 BoundingBox Player_GetWorldBBox(const Player *p, Vector3 scale);
 BoundingBox Player_GetFootBox(const Player *p, Vector3 scale, float side);
-
-#endif // PLAYER_H
