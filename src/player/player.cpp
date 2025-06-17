@@ -75,8 +75,6 @@ void Player_Update(Player *p, Body *playerBody, float dt) {
     if (IsKeyDown(KEY_D)) h -= 1.0f;
     playerBody->vel.x = h * MOVE_SPEED;
     
-    if(IsKeyDown(KEY_W)) playerBody->vel.y = 5.0f * MOVE_SPEED;
-
     /* ------------ coyote timer update ----------------------------- */
     if (onGround) {
         coyoteTimer = COYOTE_MAX;

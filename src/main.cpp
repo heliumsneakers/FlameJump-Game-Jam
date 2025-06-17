@@ -116,6 +116,32 @@ int main(void) {
         Body_Integrate(&playerBody, dt);
         Physics_Update(dt);
 
+        // Conditional for game over restart
+        if (playerBody.pos.y < -5.0f) {
+            // re-init level + player + camera
+            LevelGenerator_Init(&level, &proto, &ember);
+            Physics_SetLevelGenerator(&level);
+
+            spawn = LevelGenerator_GetSpawnPos(&level);
+            spawn.y += 3.0f;
+
+            player.position = spawn;
+            playerBody.pos  = spawn;
+            playerBody.vel  = (Vector3){0,0,0};
+
+            camera.position = (Vector3){ player.position.x, 8.0f, -18.0f };
+            camera.target   = spawn;
+
+            Light_Reset();
+            playerLight = Light_Add(
+                (Vector3){spawn.x, spawn.y + 0.5f, spawn.z},
+                lightRad,
+                (Color){255,160,100,180}
+            );
+
+            continue; // skip rendering this frame
+        }
+
         BoundingBox playerFeet = Player_GetFootBox(&player, {1.5f,1.5f,1.5f}, FOOT_SIZE);
         BoundingBox playerBB = Player_GetWorldBBox(&player, (Vector3){1.5f,1.5f,1.5f});
 
