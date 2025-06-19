@@ -16,10 +16,9 @@
 #endif
 
 static void CameraSmoothFollow(Camera* cam, Vector3 playerPos, float dt) {
-    /* desired offset from player */
     const float CAM_HEIGHT   =  8.0f;
     const float CAM_DISTANCE = -22.0f;     // along –Z
-    const float SMOOTH_SPEED =  0.5f;      // larger = snappier
+    const float SMOOTH_SPEED =  0.5f;      // larger = snappier | smaller = smoother
 
     Vector3 desiredPos = {
         playerPos.x,
@@ -27,7 +26,7 @@ static void CameraSmoothFollow(Camera* cam, Vector3 playerPos, float dt) {
         playerPos.z + CAM_DISTANCE
     };
 
-    /* exponential smoothing: pos += (desired - pos) * α */
+    // exponential smoothing: pos += (desired - pos) * alpha
     float alpha = 1.0f - powf(0.001f, dt * SMOOTH_SPEED);
     cam->position = Vector3Lerp(cam->position, desiredPos, alpha);
     cam->target   = Vector3Lerp(cam->target,   playerPos, alpha);
@@ -47,7 +46,7 @@ int main(void) {
     bgm.looping = true;
     SetMusicPan(bgm, 0.5f);
     SetMusicVolume(bgm, 0.5f);
-    PlayMusicStream(bgm);               // start playing 
+    PlayMusicStream(bgm);               
 
     Sound deathSound = LoadSound(ASSET("sounds/death.wav"));
     Sound emberSound = LoadSound(ASSET("sounds/ember.wav"));
@@ -64,7 +63,6 @@ int main(void) {
     Platform ember;
     Platform_Init(&ember, ASSET("ember.obj"), ASSET("ember.png"));
 
-    // create a tiny white texture to drive our shader‐only quads
     Image whiteImg = GenImageColor(1,1, WHITE);
     Texture2D whiteTex = LoadTextureFromImage(whiteImg);
     SetTextureFilter(whiteTex, TEXTURE_FILTER_BILINEAR);
@@ -72,7 +70,6 @@ int main(void) {
     Shader fireShader = LoadShader(NULL, "assets/shaders/fire.fs");
     int timeLoc = GetShaderLocation(fireShader, "iTime");
     int resLoc  = GetShaderLocation(fireShader, "iResolution");
-    // assume fbW, fbH from your offscreen RT:
     SetShaderValue(fireShader, resLoc,
                    (float[2]){ (float)fbW, (float)fbH },
                    SHADER_UNIFORM_VEC2);
@@ -298,7 +295,7 @@ int main(void) {
         for (int i = 0; i < Physics_GetPendingCount(); i++)
         {
             int gx, gy;
-            float tnorm; // we ignore normalized timer here, but you could fade with it
+            float tnorm; // ignore normalized timer here, but could fade with it
             Physics_GetPending(i, &gx, &gy, &tnorm);
 
             // center of the platform in world space:

@@ -15,11 +15,10 @@ bool canJump  = false;
 float lightRad = 5.0f;
 
 static const float COYOTE_MAX = 0.15f;   // 150 ms grace
-static float coyoteTimer = 0.0f;         // persists across frames
+static float coyoteTimer = 0.0f;         
 
 Sound jumpSound;
 
-// ------------------------------------------------ utility (unchanged)
 static float FindBaseY(Mesh *mesh) {
     float maxY = mesh->vertices[1];
     for (int i = 1; i < mesh->vertexCount; ++i) {
@@ -46,7 +45,6 @@ static void FindApexIndices(Mesh *mesh,
     *outCnt = cnt;
 }
 
-// ------------------------------------------------ init / unload
 void Player_Init(Player *p, const char *objPath, const char *texPath, Vector3 spawnPos) {
     p->model     = LoadModel(objPath);
     p->texture   = LoadTexture(texPath);
@@ -74,13 +72,11 @@ void Player_RefreshJump(void) {
 }
 
 void Player_Update(Player *p, Body *playerBody, float dt) {
-    /* --- horizontal input ----------------------------------------- */
     float h = 0.0f;
     if (IsKeyDown(KEY_A)) h += 1.0f;
     if (IsKeyDown(KEY_D)) h -= 1.0f;
     playerBody->vel.x = h * MOVE_SPEED;
     
-    /* ------------ coyote timer update ----------------------------- */
     if (onGround) {
         coyoteTimer = COYOTE_MAX;
         canJump = true;                  // refresh while grounded
@@ -101,10 +97,8 @@ void Player_Update(Player *p, Body *playerBody, float dt) {
     if(canJump) lightRad = 4.0f;
     else lightRad = 3.0f;
 
-    /* --- gravity --------------------------------------------------- */
     playerBody->vel.y += GRAVITY * dt;
 
-    /* --- integrate ------------------------------------------------- */
     p->position.x += playerBody->vel.x * dt;
     p->position.y += playerBody->vel.y * dt;
 
@@ -134,16 +128,13 @@ void Player_Draw(const Player *p, const Camera *cam) {
 BoundingBox Player_GetWorldBBox(const Player *p, Vector3 scale) {
     BoundingBox bb = p->localBBox;
 
-    // 1) uniform scale
     bb.min = Vector3Scale(bb.min, scale.x);
     bb.max = Vector3Scale(bb.max, scale.x);
 
-    // 2) translate to world space
     bb.min = Vector3Add(bb.min, p->position);
     bb.max = Vector3Add(bb.max, p->position);
 
-    // 3) shrink a bit:  20 % narrower (X & Z)  and 10 % shorter (Y)
-    float shrinkX = (bb.max.x - bb.min.x) * 0.20f;   // each side
+    float shrinkX = (bb.max.x - bb.min.x) * 0.20f;  
     float shrinkZ = (bb.max.z - bb.min.z) * 0.20f;
     float shrinkY = (bb.max.y - bb.min.y) * 0.20f;
 
@@ -153,24 +144,19 @@ BoundingBox Player_GetWorldBBox(const Player *p, Vector3 scale) {
     bb.max.z -= shrinkZ;
 
     bb.min.y += shrinkY;          // raise the floor a bit
-    // (optionally) bb.max.y -= shrinkY;  // lower the head if desired
+    // (optionally) bb.max.y -= shrinkY;  // lower the head if need 
 
     return bb;
 }
 
-BoundingBox Player_GetFootBox(const Player *p,
-                               Vector3 scale,
-                               float   side)
-{
-    /* full‐body world bbox */
+BoundingBox Player_GetFootBox(const Player *p, Vector3 scale, float side) {
     BoundingBox wb = Player_GetWorldBBox(p, scale);
 
-    /* foot centre = middle of XZ, lowest Y */
     float cx = (wb.min.x + wb.max.x) * 0.5f;
     float cz = (wb.min.z + wb.max.z) * 0.5f;
-    float cy =  wb.min.y;                      // feet plane
+    float cy =  wb.min.y;             
 
-    float h = side * 0.5f;                     // half side
+    float h = side * 0.5f;     
 
     BoundingBox cube;
     cube.min = (Vector3){ cx - h, cy - h, cz - h };

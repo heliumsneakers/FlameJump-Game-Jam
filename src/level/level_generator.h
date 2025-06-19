@@ -9,12 +9,10 @@
 #define CELL_WIDTH    2.0f // world units per cell (x)
 #define CELL_HEIGHT   4.0f // world units per cell (y)
 
-#define START_FLOOR_PLATFORMS 5  // contiguous starting floor
+#define START_FLOOR_PLATFORMS 5  
 
-/* ---- constants --------------------------------------------------- */
 #define BUFFER_ROWS (GRID_HEIGHT*2)
 
-/* ---- internal state ---------------------------------------------- */
 struct LevelGenerator {
     Platform  *prototype;
     Platform  *emberProto;

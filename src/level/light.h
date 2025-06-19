@@ -4,24 +4,20 @@
 #include "raylib.h"
 #include <stdint.h>
 
-#define MAX_LIGHTS 32          /* player + 31 embers max */
+#define MAX_LIGHTS 32         
 
-/* simple point-light definition */
 typedef struct {
     bool     enabled;
-    Vector3  pos;              /* world-space position */
-    float    radius;           /* world units */
-    Color    color;            /* tint (alpha controls strength) */
+    Vector3  pos;              // world-space position 
+    float    radius;           // world units
+    Color    color;            // tint (alpha controls strength)
 } Light;
 
-/* global static registry (for convenience) */
 extern Light gLights[MAX_LIGHTS];
 extern uint32_t gLightCount;
 
-/* -------------------------------------------------------------- */
-void Light_Reset(void);                    /* clear registry      */
+void Light_Reset(void);                    
 int  Light_Add(Vector3 pos, float radius, Color tint);
 void Light_UpdatePos(int id, Vector3 newPos, float newRadius);
-void Light_DrawAll(Camera cam);            /* call each frame     */
-
+void Light_DrawAll(Camera cam);            
 #endif /* LIGHT_H */

@@ -4,7 +4,6 @@
 #include <math.h>
 #include <string.h>
 
-// how many can we “pending‐destroy” at once?
 #define MAX_PENDINGS 256
 
 typedef struct {
@@ -35,7 +34,6 @@ void Physics_Update(float dt) {
         if (!sPendings[i].active) continue;
         sPendings[i].timer -= dt;
         if (sPendings[i].timer <= 0.0f) {
-            // time’s up → clear that cell
             LevelGenerator_ClearCell(sLevel,
                                      sPendings[i].gx,
                                      sPendings[i].gy);
@@ -44,21 +42,16 @@ void Physics_Update(float dt) {
     }
 }
 
-bool ResolvePlatformCollision(Body *player,
-                              const BoundingBox *platBox,
-                              const BoundingBox *footBox,
-                              float restitution,
-                              bool *landed)
-{
-    // 1) feet must hit top face
+bool ResolvePlatformCollision(Body *player, const BoundingBox *platBox, const BoundingBox *footBox, float restitution, bool *landed) {
+    // feet must hit top face
     if (!CheckCollisionBoxes(*footBox, *platBox)) return false;
-    // 2) only if descending
+    // only if descending
     if (player->vel.y >= 0.0f) return false;
-    // 3) penetration depth
+    // penetration depth
     float penY = platBox->max.y - footBox->min.y;
     if (penY < 0.0f) return false;
 
-    // — we have a landing —
+    // we have a landing
     player->pos.y   += penY + 0.0001f;
     player->vel.y    = -player->vel.y * restitution;
     if (landed) *landed = true;
@@ -106,7 +99,7 @@ int Physics_GetPendingCount(void) {
     return c;
 }
 
-/// Fills out the i-th pending’s cell coords and normalized timer [1→0]
+// Fills out the i-th pending’s cell coords and normalized timer [1->0]
 void Physics_GetPending(int i, int *gx, int *gy, float *timerNorm) {
     // walk until we find the i-th
     int found = 0;
@@ -115,8 +108,6 @@ void Physics_GetPending(int i, int *gx, int *gy, float *timerNorm) {
         if (found == i) {
             *gx = sPendings[j].gx;
             *gy = sPendings[j].gy;
-            // if fuse was set to, say, 3s, timerNorm = rem/3
-            // but here we used .5f, so we assume original = 0.5f
             *timerNorm = sPendings[j].timer / 0.5f;
             return;
         }

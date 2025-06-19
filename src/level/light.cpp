@@ -1,15 +1,12 @@
 #include "light.h"
 #include "raylib.h"
-#include "raymath.h"
 
 Light      gLights[MAX_LIGHTS];
 uint32_t   gLightCount = 0;
 
-/* 256×256 white radial sprite generated once */
 static RenderTexture2D glowRT;
 static bool glowReady = false;
 
-/* ---------- helpers ------------------------------------------- */
 static void EnsureGlowTexture(void)
 {
     if (glowReady) return;
@@ -25,7 +22,6 @@ static void EnsureGlowTexture(void)
     glowReady = true;
 }
 
-/* ---------- API ----------------------------------------------- */
 void Light_Reset(void)
 {
     gLightCount = 0;
@@ -55,7 +51,7 @@ void Light_DrawAll(Camera cam)
 
     Rectangle src = { 0, 0,
         (float)glowRT.texture.width,
-        (float)glowRT.texture.height };     /* normal, not flipped */
+        (float)glowRT.texture.height };     
 
     for (uint32_t i = 0; i < gLightCount; ++i)
     {
@@ -64,7 +60,6 @@ void Light_DrawAll(Camera cam)
         Vector3  pos  = gLights[i].pos;
         Vector2  size = { gLights[i].radius, gLights[i].radius };
 
-        /* simple upright billboard */
         DrawBillboardRec(cam,
                          glowRT.texture,
                          src,

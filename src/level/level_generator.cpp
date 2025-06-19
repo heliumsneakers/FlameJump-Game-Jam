@@ -4,7 +4,6 @@
 #include <string.h>
 #include <time.h>
 
-/* ------------------------ helpers --------------------------------- */
 static void SeedRNG()
 {
     static bool seeded = false;
@@ -22,7 +21,6 @@ static inline Vector3 CellToWorld(int gx, int gy)
     return (Vector3){ gx * CELL_WIDTH, gy * CELL_HEIGHT, 0 };
 }
 
-/* ------------ tiny util: 3×3 isolation test ----------------------- */
 static bool IsCellIsolated(const LevelGenerator *lg,
                            int worldRow, int gx)
 {
@@ -42,7 +40,6 @@ static bool IsCellIsolated(const LevelGenerator *lg,
     return true;
 }
 
-/* ------------------------ row generation -------------------------- */
 static void GenerateRow(LevelGenerator *lg, int worldRow)
 {
     int gy = RowToBuf(lg, worldRow);
