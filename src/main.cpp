@@ -9,6 +9,7 @@
 #include "level/light.h"
 #include "physics/physics.h"
 
+
 #if defined(PLATFORM_WEB)
 #define ASSET(x) "assets/" x
 #else
@@ -61,7 +62,7 @@ int main(void) {
                   ASSET("woodplatform.obj"),
                   ASSET("woodplatform_tex.png"));
     Platform ember;
-    Platform_Init(&ember, ASSET("ember.obj"), ASSET("ember.png"));
+    Platform_Init(&ember, ASSET("ember.obj"), ASSET("ember.png")); 
 
     Image whiteImg = GenImageColor(1,1, WHITE);
     Texture2D whiteTex = LoadTextureFromImage(whiteImg);

@@ -8,7 +8,6 @@
 #define Y_EPSILON 1e-6f
 #define MOVE_SPEED   6.0f      // units / s
 float JUMP_FORCE = 18.0f;
-
 bool onGround = false;
 bool canJump  = false;
 
@@ -50,6 +49,7 @@ void Player_Init(Player *p, const char *objPath, const char *texPath, Vector3 sp
     p->texture   = LoadTexture(texPath);
     p->position  = spawnPos;
     p->rotation  = 0.0f;
+     
 
     p->model.materials[0]
         .maps[MATERIAL_MAP_DIFFUSE].texture = p->texture;
